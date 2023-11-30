@@ -1,5 +1,6 @@
 package com.aws.audit.repository.impl;
 
+import com.aws.audit.configuration.DynamodbConfig;
 import com.aws.audit.dto.SearchCriteria;
 import com.aws.audit.entity.Audit;
 import com.aws.audit.repository.AuditRepository;
@@ -19,8 +20,6 @@ import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Repository
 @Slf4j
@@ -28,11 +27,13 @@ public class DynamoDbAuditRepository implements AuditRepository {
 
     private final DynamoDbEnhancedClient dynamoDbEnhancedClient;
     private DynamoDbTable<Audit> auditTable;
+    private DynamodbConfig dynamodbConfig;
 
 
     @Autowired
-    public DynamoDbAuditRepository(DynamoDbEnhancedClient dynamoDbEnhancedClient) {
+    public DynamoDbAuditRepository(DynamoDbEnhancedClient dynamoDbEnhancedClient,DynamodbConfig dynamodbConfig) {
         this.dynamoDbEnhancedClient = dynamoDbEnhancedClient;
+        this.dynamodbConfig = dynamodbConfig;
         auditTable = createTableIfNotExist(dynamoDbEnhancedClient);
     }
 
@@ -42,7 +43,7 @@ public class DynamoDbAuditRepository implements AuditRepository {
 
     private DynamoDbTable<Audit> createTableIfNotExist(DynamoDbEnhancedClient dynamoDbEnhancedClient) {
         boolean isExist = false;
-        auditTable = dynamoDbEnhancedClient.table("Audit", TableSchema.fromBean(Audit.class));
+        auditTable = dynamoDbEnhancedClient.table(dynamodbConfig.getTableName(), TableSchema.fromBean(Audit.class));
         try {
             auditTable.describeTable();
             isExist = true;
@@ -59,7 +60,7 @@ public class DynamoDbAuditRepository implements AuditRepository {
 
     private DynamoDbTable<Audit> createTable(DynamoDbEnhancedClient dynamoDbEnhancedClient) {
         // Create the table
-        auditTable = dynamoDbEnhancedClient.table("Audit", TableSchema.fromBean(Audit.class));
+        auditTable = dynamoDbEnhancedClient.table(dynamodbConfig.getTableName(), TableSchema.fromBean(Audit.class));
         auditTable.createTable(builder -> builder
                 .provisionedThroughput(b -> b
                         .readCapacityUnits(2L)
@@ -71,7 +72,7 @@ public class DynamoDbAuditRepository implements AuditRepository {
 
         try (DynamoDbWaiter waiter = DynamoDbWaiter.create()) { // DynamoDbWaiter is Autocloseable
             ResponseOrException<DescribeTableResponse> response = waiter
-                    .waitUntilTableExists(builder -> builder.tableName("Audit").build())
+                    .waitUntilTableExists(builder -> builder.tableName(dynamodbConfig.getTableName()).build())
                     .matched();
             DescribeTableResponse tableDescription = response.response().orElseThrow(
                     () -> new RuntimeException("Audit table was not created."));

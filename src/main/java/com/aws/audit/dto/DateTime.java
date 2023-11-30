@@ -15,6 +15,6 @@ public class DateTime {
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate startDate;
 
-    @JsonFormat(pattern = "dd/MM/yyyy")
+   @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate endDate;
 }
