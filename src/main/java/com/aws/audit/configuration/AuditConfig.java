@@ -18,6 +18,7 @@ public class AuditConfig {
     @Bean
     public DynamoDbClient dynamoDbClient(DynamodbConfig dynamodbConfig) {
         return DynamoDbClient.builder()
+                .endpointOverride(URI.create(dynamodbConfig.getEndpoint()))
                 .region(Region.of(dynamodbConfig.getRegion()))
                 .build();
     }

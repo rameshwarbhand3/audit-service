@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.aws.audit</groupId>
-	<artifactId>AuditService</artifactId>
+	<artifactId>audit-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>AuditService</name>
 	<description>Platform audit service</description>
